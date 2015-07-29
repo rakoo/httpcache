@@ -29,10 +29,17 @@ const (
 var ErrNotFoundInCache = errors.New("Not found in cache")
 
 type Cache interface {
+	// Header retrieves the Status and Headers for a given key path
 	Header(key string) (Header, error)
+
+	// Store stores a resource against a number of keys
 	Store(res *Resource, keys ...string) error
+
+	// Retrieve returns a cached Resource for the given key
 	Retrieve(key string) (*Resource, error)
+
 	Invalidate(keys ...string)
+
 	Freshen(res *Resource, keys ...string) error
 }
 
@@ -90,7 +97,6 @@ func (c *cache) vfsWrite(path string, r io.Reader) error {
 	return nil
 }
 
-// Retrieve the Status and Headers for a given key path
 func (c *cache) Header(key string) (Header, error) {
 	path := headerPrefix + formatPrefix + hashKey(key)
 	f, err := c.fs.Open(path)
@@ -104,7 +110,6 @@ func (c *cache) Header(key string) (Header, error) {
 	return readHeaders(bufio.NewReader(f))
 }
 
-// Store a resource against a number of keys
 func (c *cache) Store(res *Resource, keys ...string) error {
 	var buf = &bytes.Buffer{}
 
@@ -149,7 +154,6 @@ func (c *cache) storeHeader(code int, h http.Header, key string) error {
 	return nil
 }
 
-// Retrieve returns a cached Resource for the given key
 func (c *cache) Retrieve(key string) (*Resource, error) {
 	f, err := c.fs.Open(bodyPrefix + formatPrefix + hashKey(key))
 	if err != nil {
