@@ -61,7 +61,7 @@ func main() {
 		cache = httpcache.NewMemoryCache()
 	}
 
-	handler := httpcache.NewHandler(cache, proxy)
+	handler := httpcache.NewHandler(httpcache.NewDiffCache(cache), proxy)
 	handler.Shared = !private
 
 	respLogger := httplog.NewResponseLogger(handler)

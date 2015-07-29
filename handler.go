@@ -396,6 +396,15 @@ func (h *Handler) storeResource(res *Resource, r *cacheRequest) {
 // lookupResource finds the best matching Resource for the
 // request, or nil and ErrNotFoundInCache if none is found
 func (h *Handler) lookup(req *cacheRequest) (*Resource, error) {
+	// First, look in the diffs if possible
+	if req.Header.Get("A-Im") == "vcdiff" && req.Header.Get("If-None-Match") != "" {
+		diffKey := "vcdiff-" + req.Header.Get("If-None-Match") + "-" + req.Key.String()
+		res, err := h.cache.Retrieve(diffKey)
+		if err == nil {
+			return res, nil
+		}
+	}
+
 	res, err := h.cache.Retrieve(req.Key.String())
 
 	// HEAD requests can possibly be served from GET
